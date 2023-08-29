@@ -24,13 +24,24 @@ namespace E_commerceSprint1_MVC.Controllers
         }
 
         // GET: Categories
-        [HttpGet]
-        public async Task<IEnumerable> GetCategories()
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Category>> GetCategories(int id)
         {
-            var categories = _context.Categories.ToList();
+            var categories = await _context.Categories.Include(c => c.Products).FirstOrDefaultAsync(c => c.Id == id);
+             if (categories == null)
+            {
+                return NotFound();
+            }
             return categories;
         }
 
+        [HttpGet]
+        public async Task<IEnumerable> GetCategories()
+        {
+            var categories = _context.Categories.Include(c => c.Products).ToList();
+
+            return categories;
+        }
         [HttpPost]
 
         public async Task<IActionResult> CreateCategory(string name, string description)

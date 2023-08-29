@@ -26,28 +26,28 @@ namespace E_commerceSprint1_MVC.Controllers
         public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
         {
           
-            return await _context.Products.Include(p =>p.Category).ToListAsync();
+            return await _context.Products.ToListAsync();
         }
 
         // GET: api/Products/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Product>> GetProduct(int id)
+        public async Task<ActionResult<IEnumerable<Product>>> GetProducts(int? categoryId = null)
         {
-         
-            var product = await _context.Products.FindAsync(id);
-
-            if (product == null)
+            if (categoryId.HasValue)
             {
-                return NotFound();
+                return await _context.Products
+                                     .Where(p => p.CategoryId == categoryId)
+                                    // .Include(p => p.Category)
+                                     .ToListAsync();
             }
 
-            return product;
+            return await _context.Products.ToListAsync();
         }
 
         // PUT: api/Products/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut()]
-        public async Task<IActionResult> PutProduct([FromBody] Product product)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutProduct(int id, [FromBody] Product product)
         {
             if (!ModelState.IsValid)
             {
@@ -59,7 +59,7 @@ namespace E_commerceSprint1_MVC.Controllers
                 return BadRequest("Product ID is required.");
             }
 
-            var productToUpdate = _context.Products.Find(product.Id);
+            var productToUpdate = await _context.Products.FindAsync(id);
 
             if (productToUpdate == null)
             {
@@ -70,6 +70,7 @@ namespace E_commerceSprint1_MVC.Controllers
             productToUpdate.ProductName = product.ProductName;
             productToUpdate.Price = product.Price;
             productToUpdate.Description = product.Description;
+            productToUpdate.ImgUrl = product.ImgUrl;
 
             _context.Entry(productToUpdate).State = EntityState.Modified;
 
@@ -105,7 +106,7 @@ namespace E_commerceSprint1_MVC.Controllers
         }
 
         // DELETE: api/Products/5
-        [HttpDelete()]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteProduct(int id)
         {
             var product = await _context.Products.FindAsync(id);

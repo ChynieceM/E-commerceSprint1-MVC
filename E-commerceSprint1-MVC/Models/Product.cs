@@ -9,12 +9,17 @@ namespace E_commerceSprint1_MVC.Models
         public string? ProductName { get; set; }
         public string? Description { get; set; }
         public string? Price { get; set; }
+
+        public string? ImgUrl { get; set; }
+      
+        [ForeignKey("CategoryId")]
         public int CategoryId { get; set; }
 
         // Navigation property
-        [ForeignKey("CategoryId")]
-        public virtual Category? Category { get; set; }
     }
+
+
+        //public virtual Category? Category { get; set; }
 
    
 }

@@ -3,6 +3,7 @@ using E_commerceSprint1_MVC;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace E_commerceSprint1_MVC.Migrations
 {
     [DbContext(typeof(E_commerceSprint1_MVCDBContext))]
-    partial class E_commerceSprint1_MVCDBContextModelSnapshot : ModelSnapshot
+    [Migration("20230828200302_image")]
+    partial class image
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
