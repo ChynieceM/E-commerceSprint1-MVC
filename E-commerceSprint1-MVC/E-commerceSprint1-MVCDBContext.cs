@@ -13,12 +13,13 @@ namespace E_commerceSprint1_MVC
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Product>().ToTable("Product");
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<Product>().HasOne(c => c.Category).WithMany(c => c.Products).HasForeignKey(c => c.CategoryId);
+           // modelBuilder.Entity<Product>().HasOne(c => c.Category).WithMany(c => c.Products).HasForeignKey(c => c.CategoryId);
         }
 
 
-        public DbSet<E_commerceSprint1_MVC.Models.Product> Product { get; set; } = default!;
+     
     }
 }
