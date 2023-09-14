@@ -1,9 +1,11 @@
 ﻿using E_commerceSprint1_MVC.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace E_commerceSprint1_MVC
 {
-    public class E_commerceSprint1_MVCDBContext: DbContext
+    public class E_commerceSprint1_MVCDBContext: IdentityDbContext<ApplicationUser>
     {
         public DbSet<Category> Categories { get; set; }
 
@@ -11,12 +13,13 @@ namespace E_commerceSprint1_MVC
 
         public E_commerceSprint1_MVCDBContext(DbContextOptions options) : base(options) { }
 
+        public DbSet<ApplicationUser> Users { get; set; } = default;
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Product>().ToTable("Product");
             base.OnModelCreating(modelBuilder);
 
-           // modelBuilder.Entity<Product>().HasOne(c => c.Category).WithMany(c => c.Products).HasForeignKey(c => c.CategoryId);
+           
         }
 
 

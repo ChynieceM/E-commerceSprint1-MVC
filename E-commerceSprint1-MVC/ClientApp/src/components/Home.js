@@ -7,7 +7,6 @@ import axios from 'axios';
 
 export function Home() {
     const [categories, setCategories] = useState([]);
-    const [dropdownOpen, setDropdownOpen] = useState(false);
     const [products, setProducts] = useState([]);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [modalOpen, setModalOpen] = useState(false);
@@ -26,8 +25,85 @@ export function Home() {
 
     const [addModalOpen, setAddModalOpen] = useState(false);
 
+    const [selectedCategoryDetails, setSelectedCategoryDetails] = useState({ id: null, name: '', description: '' });
+
+    const [categoryModalOpen, setCategoryModalOpen] = useState(false);
+
+    const [newCategoryName, setNewCategoryName] = useState("");
+    const [newCategoryDescription, setNewCategoryDescription] = useState("");
+    const [addCategoryModalOpen, setAddCategoryModalOpen] = useState(false);
+    const [categoryEditDropdownOpen, setCategoryEditDropdownOpen] = useState(false);
+    const [dropdownMenuOpen, setMenuDropdownOpen] = useState(false);
+
+    const toggleMenuDropdown = () => setMenuDropdownOpen(prevOpen => !prevOpen);
+
+    const toggleCategoryEditDropdown = () => {
+        setCategoryEditDropdownOpen(prevState => !prevState);
+    };
+
+
+    const toggleCategoryModal = () => {
+        setCategoryModalOpen(!categoryModalOpen);
+    }
+
+    const toggleAddCategoryModal = () => {
+        setAddCategoryModalOpen(!addCategoryModalOpen);
+    }
+   
+    const handleCategorySave = async () => {
+        const updatedCategory = {
+            name: selectedCategoryDetails.name,
+            description: selectedCategoryDetails.description
+        };
+        console.log("category id: ", selectedCategoryDetails)
+        try {
+            await axios.put(`http://localhost:5135/categories/${selectedCategoryDetails.id}`, updatedCategory);
+            toggleCategoryModal();
+            
+        } catch (error) {
+            console.error("Error updating category:", error);
+        }
+    }
+
+    const handleAddCategory = async () => {
+        const newCategory = {
+            name: newCategoryName,
+            description: newCategoryDescription
+        };
+
+        try {
+            const response = await axios.post(`http://localhost:5135/categories?name=${newCategory.name}&description=${newCategory.description}`);
+            console.log("Added category: ", response.data);
+            fetchCategories();
+            //setCategories([...categories, response.data]);
+            toggleAddCategoryModal();
+            
+        } catch (error) {
+            console.error("Could not add category:", error);
+        }
+    }
+
+  
+
+
+    
+
+    const handleDeleteCategoryClick = async (categoryToDelete) => {
+        if (!categoryToDelete) return;
+
+        try {
+            await axios.delete(`http://localhost:5135/categories/${categoryToDelete.id}`);
+            const updatedCategories = categories.filter(cat => cat.id !== categoryToDelete.id);
+            setCategories(updatedCategories);
+            toggleCategoryModal();
+        } catch (error) {
+            console.error("Error deleting category:", error);
+        }
+    }
+
     const fetchProducts = async (categoryId) => {
         try {
+            console.log("Fetching category with ID:", categoryId);
             const response = await axios.get(`http://localhost:5135/categories/${categoryId}`);
             console.log("Fetched products:", response.data);
             setProducts(response.data.products);
@@ -40,7 +116,9 @@ export function Home() {
         setModalOpen(!modalOpen);
     }
 
-    const handleProductClick = (product) => {
+   
+
+    const handleProductClick = (product) => { //getting details for products 
         setSelectedProduct(product);
         setProductName(product.productName);
         setProductDescription(product.description);
@@ -50,7 +128,7 @@ export function Home() {
         toggleModal();
     }
 
-    const handleSave = async () => {
+    const handleSave = async () => { //saving products
         const updatedProduct = {
             productName,
             description: productDescription,
@@ -106,7 +184,6 @@ export function Home() {
         }
     }
 
-    useEffect(() => {
         async function fetchCategories() {
             try {
                 const response = await axios.get('http://localhost:5135/categories');
@@ -117,16 +194,17 @@ export function Home() {
                 console.error("Error fetching categories:", error);
             }
         }
-        fetchCategories();
+    useEffect(() => {
+       fetchCategories();
+       
+        
 
         
       //  fetchProducts();
     }, []);
 
 
-    const toggleDropdown = () => {
-        setDropdownOpen(prevState => !prevState);
-    }
+    
 
     const toggleAddModal = () => {
         setAddModalOpen(!addModalOpen);
@@ -134,7 +212,85 @@ export function Home() {
 
     return (
         <div>
+
+            <Button color="primary" onClick={toggleAddCategoryModal}>Add Category</Button>
+            <Button color="secondary" onClick={toggleCategoryModal}>Edit Categories</Button>
             <Button color="primary" onClick={toggleAddModal}>Add Product</Button>
+
+            {/* Add new category */}
+
+            <Modal isOpen={addCategoryModalOpen} toggle={toggleAddCategoryModal}>
+                <ModalHeader>New Category</ModalHeader>
+                <ModalBody>
+                    {
+                        <div>
+                            <div>
+                                <label>Name</label>
+                                <input type="text" value={newCategoryName} onChange={e => setNewCategoryName(e.target.value )} />
+                            </div>
+                            <div>
+                                <label>Description</label>
+                                <input type="text" value={newCategoryDescription} onChange={e => setNewCategoryDescription(e.target.value )} />
+                            </div>
+                        </div>
+                    }
+                </ModalBody>
+                <ModalFooter>
+                    <Button color="primary" onClick={handleAddCategory}>Add</Button>
+                    <Button color="primary" onClick={handleCategorySave}>Save</Button>
+                    <Button color="secondary" onClick={toggleAddCategoryModal}>Cancel</Button>
+                </ModalFooter>
+            </Modal>
+
+            {/* Edit Categories and Delete Categories */}
+            <Modal isOpen={categoryModalOpen} toggle={toggleCategoryModal}>
+                <ModalHeader toggle={toggleCategoryModal}>Edit Category</ModalHeader>
+                <ModalBody>
+                    <Dropdown isOpen={dropdownMenuOpen} toggle={toggleMenuDropdown}>
+                        <DropdownToggle caret>
+                            Category
+                        </DropdownToggle>
+                        <DropdownMenu>
+                            {categories.map(category => (
+                                <DropdownItem
+                                    key={category.id}
+                                    onClick={() => {
+                                        console.log(category);
+                                        setSelectedCategoryDetails(category);
+                                    }}
+                                >
+                                    {category.name}
+                                </DropdownItem>
+                            ))}
+                        </DropdownMenu>
+                    </Dropdown>
+
+                    <div>
+                        <label>Name</label>
+                        <input
+                            type="text"
+                            value={selectedCategoryDetails.name}
+                            onChange={e => setSelectedCategoryDetails(prevState => ({ ...prevState, name: e.target.value }))}
+                        />
+                    </div>
+                    <div>
+                        <label>Description</label>
+                        <input
+                            type="text"
+                            value={selectedCategoryDetails.description}
+                            onChange={e => setSelectedCategoryDetails(prevState => ({ ...prevState, description: e.target.value }))}
+                        />
+                    </div>
+                </ModalBody>
+                <ModalFooter>
+                    <Button color="primary" onClick={handleCategorySave}>Save Category</Button>
+                    <Button color="danger" onClick={() => handleDeleteCategoryClick(selectedCategoryDetails)}>Delete</Button>
+                    <Button color="secondary" onClick={toggleCategoryModal}>Cancel</Button>
+                </ModalFooter>
+            </Modal>
+
+
+            {/* Add new products */}
 
             <Modal isOpen={addModalOpen} toggle={toggleAddModal}>
                 <ModalHeader toggle={toggleAddModal}>Add Product</ModalHeader>
@@ -172,14 +328,19 @@ export function Home() {
                 </ModalFooter>
             </Modal>
 
-            <Dropdown nav isOpen={dropdownOpen} toggle={toggleDropdown}>
+            {/* Category Drop down/ product cards */}
+            <Dropdown nav isOpen={categoryEditDropdownOpen} toggle={toggleCategoryEditDropdown}>
                 <DropdownToggle nav caret>
                     Categories
                 </DropdownToggle>
                 <DropdownMenu>
                     {categories.map((category) => (
-                        <DropdownItem key={category.id} onClick={() => fetchProducts(category.id)}>
-                            {category.name}
+                        <DropdownItem key={category.id}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <span onClick={() => fetchProducts(category.id)}>
+                                    {category.name}
+                                </span>
+                            </div>
                         </DropdownItem>
                     ))}
                 </DropdownMenu>
@@ -193,7 +354,7 @@ export function Home() {
                         }}
                         key={product.id}>
                         <img
-                            alt={product.description}
+                            alt={product.name}
                             src={product.imgUrl}
                         />
                         <CardBody>
@@ -212,6 +373,7 @@ export function Home() {
                 ))}
             </div>
 
+            {/* Edit products */}
             <Modal isOpen={modalOpen} toggle={toggleModal}>
                 <ModalHeader toggle={toggleModal}>Edit Product</ModalHeader>
                 <ModalBody>

@@ -53,20 +53,37 @@ namespace E_commerceSprint1_MVC.Controllers
             return Ok(category);
         }
 
-        [HttpPut]
-
-        public async Task<IActionResult> EditCategory(int id, [FromBody]Category category)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> EditCategory(int id, [FromBody] Category category)
         {
+            if (category == null)
+            {
+                return BadRequest("Category data is invalid.");
+            }
+
             var currentCategory = await _context.Categories.FindAsync(id);
+
+            if (currentCategory == null)
+            {
+                return NotFound("Category not found");
+            }
+
             currentCategory.Name = category.Name;
             currentCategory.Description = category.Description;
-            currentCategory.Products = category.Products;
-          //  _context.Categories.Update(currentCategory);
-            _context.SaveChanges();
-            return Ok(category);
+
+            int affectedRows = await _context.SaveChangesAsync();
+
+            if (affectedRows == 0)
+            {
+                return StatusCode(500, "Unable to save changes.");
+            }
+
+            return Ok(currentCategory);
         }
 
-        [HttpDelete]
+
+
+        [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCategory(int id)
         {
             var currentCategory = await _context.Categories.FindAsync(id);
